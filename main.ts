@@ -64,7 +64,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
             for (let i = 0; i < tries; i++) {
                 // ## tries ARE CALC'd WITH 95% RELIABILITY TARGET
                 radio.sendValue("ACK", stationID)
-                basic.showNumber(i)
+                drawNumber(tries - i)
                 basic.pause(randint(1, 10) * 200)
             }
             basic.clearScreen()

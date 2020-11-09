@@ -52,7 +52,7 @@ def on_received_value(name, value):
             if value == stationID:      ### REPLY ONLY IF WE HAVE A MATCHING STATIONID
                 for i in range(tries):  ### tries ARE CALC'd WITH 95% RELIABILITY TARGET
                     radio.send_value("ACK",stationID)
-                    basic.show_number(i)
+                    drawNumber(tries-i)
                     basic.pause(randint(1, 10)*200)
                 basic.clear_screen()
             drawStationID()
