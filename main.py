@@ -6,11 +6,7 @@ stationACK = range(26).fill(0)
 def on_button_pressed_b():
     global stationID
     stationID = (stationID + 1) % 26
-    if stationID > 9:
-        drawNumber(stationID)
-    else:
-        basic.show_number(stationID)
-    pass
+    drawStationID()
 input.on_button_pressed(Button.B, on_button_pressed_b)
 
 ##### SERVER #####
@@ -29,7 +25,7 @@ def on_button_pressed_ab():
                     basic.pause(100)
             drawNumber(i)
         basic.clear_screen()
-    basic.show_number(stationID)
+    drawStationID()
 input.on_button_pressed(Button.AB, on_button_pressed_ab)
 
 ### DUMP THE stationACKs
@@ -59,6 +55,7 @@ def on_received_value(name, value):
                     basic.show_number(i)
                     basic.pause(randint(1, 10)*200)
                 basic.clear_screen()
+            drawStationID()
 radio.on_received_value(on_received_value)
 
 
@@ -71,6 +68,14 @@ def drawNumber(n: number):
             led.plot(i % 5, i // 5)
     else:
         basic.show_icon(IconNames.SAD)
+
+def drawStationID():
+    global stationID
+    if stationID > 9:
+        drawNumber(stationID)
+    else:
+        basic.show_number(stationID)
+    pass
 
 def getRSSI():
     return radio.received_packet(RadioPacketProperty.SIGNAL_STRENGTH)

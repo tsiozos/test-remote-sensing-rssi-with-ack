@@ -5,13 +5,7 @@ let stationACK = _py.range(26).fill(0)
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
     stationID = (stationID + 1) % 26
-    if (stationID > 9) {
-        drawNumber(stationID)
-    } else {
-        basic.showNumber(stationID)
-    }
-    
-    
+    drawStationID()
 })
 // #### SERVER #####
 // #### SEND SYNC REQ #####
@@ -36,7 +30,7 @@ input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
         basic.clearScreen()
     }
     
-    basic.showNumber(stationID)
+    drawStationID()
 })
 // ## DUMP THE stationACKs
 input.onButtonPressed(Button.A, function on_button_pressed_a() {
@@ -76,6 +70,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
             basic.clearScreen()
         }
         
+        drawStationID()
     }
     
 })
@@ -90,6 +85,17 @@ function drawNumber(n: number) {
     } else {
         basic.showIcon(IconNames.Sad)
     }
+    
+}
+
+function drawStationID() {
+    
+    if (stationID > 9) {
+        drawNumber(stationID)
+    } else {
+        basic.showNumber(stationID)
+    }
+    
     
 }
 
