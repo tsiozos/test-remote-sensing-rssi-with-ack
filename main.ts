@@ -88,6 +88,7 @@ function drawNumber(n: number) {
     
 }
 
+// #### DRAW STATIONID USING LEDS #####
 function drawStationID() {
     
     if (stationID > 9) {

@@ -69,6 +69,7 @@ def drawNumber(n: number):
     else:
         basic.show_icon(IconNames.SAD)
 
+##### DRAW STATIONID USING LEDS #####
 def drawStationID():
     global stationID
     if stationID > 9:
