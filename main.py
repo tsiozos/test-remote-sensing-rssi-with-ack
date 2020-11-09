@@ -33,7 +33,7 @@ def on_button_pressed_a():
     global stationACK
     lack = 26
     for i in range(1,lack):
-        print("Station "+str(i)+" ACK: "+ str(Math.map(stationACK[i],0,255,-128,-42)))
+        print("Station "+str(i)+" ACK: "+ str(Math.map(stationACK[i],1,255,-128,-42)))
         basic.pause(100)
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
@@ -43,7 +43,7 @@ def on_received_value(name, value):
     if stationID == 0:    #if we are the server then accept the ACK command
         if name == "ACK":
             if value > 0 & value <= 25:
-                stationACK[value] = Math.map(getRSSI(),-128,-42,0,255)
+                stationACK[value] = Math.map(getRSSI(),-128,-42,1,255)
                 print("station "+str(value)+" has RSSI: "+getRSSI()+" ("+stationACK[value]+")")
     else:
         if name=="SYNC":    #if we are a client we send ACK several times

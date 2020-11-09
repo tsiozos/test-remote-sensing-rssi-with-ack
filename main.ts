@@ -37,7 +37,7 @@ input.onButtonPressed(Button.A, function on_button_pressed_a() {
     
     let lack = 26
     for (let i = 1; i < lack; i++) {
-        console.log("Station " + ("" + i) + " ACK: " + ("" + Math.map(stationACK[i], 0, 255, -128, -42)))
+        console.log("Station " + ("" + i) + " ACK: " + ("" + Math.map(stationACK[i], 1, 255, -128, -42)))
         basic.pause(100)
     }
 })
