@@ -29,6 +29,7 @@ def on_button_pressed_ab():
                     basic.pause(100)
             drawNumber(i)
         basic.clear_screen()
+    basic.show_number(stationID)
 input.on_button_pressed(Button.AB, on_button_pressed_ab)
 
 ### DUMP THE stationACKs

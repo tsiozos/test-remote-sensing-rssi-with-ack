@@ -36,6 +36,7 @@ input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
         basic.clearScreen()
     }
     
+    basic.showNumber(stationID)
 })
 // ## DUMP THE stationACKs
 input.onButtonPressed(Button.A, function on_button_pressed_a() {
