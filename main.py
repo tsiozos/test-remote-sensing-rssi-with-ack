@@ -18,12 +18,14 @@ input.on_button_pressed(Button.B, on_button_pressed_b)
 
 def on_button_pressed_ab():
     global stationID, stationACK
-    #ASKING FOR SYNC
+    #ASKING FOR RE-SYNC. OLD RSSI VALUES IGNORED
     if stationID == 0:
         for i in range(1,26):
+            print ("asking for SYNC station "+str(i))
+            stationACK[i] = 0   # reset the last RSSI. This may change async during the loop below
             for j in range(10):
                 if stationACK[i] == 0:    #if station didn't reply yet keep sending
-                    radio.send_value("SYNC", 0)
+                    radio.send_value("SYNC", i)
                     basic.pause(100)
             drawNumber(i)
         basic.clear_screen()
@@ -32,8 +34,8 @@ input.on_button_pressed(Button.AB, on_button_pressed_ab)
 ### DUMP THE stationACKs
 def on_button_pressed_a():
     global stationACK
-    lack = len(stationACK)
-    for i in range(lack):
+    lack = 26
+    for i in range(1,lack):
         print("Station "+str(i)+" ACK: "+ str(Math.map(stationACK[i],0,255,-128,-42)))
         basic.pause(100)
 input.on_button_pressed(Button.A, on_button_pressed_a)

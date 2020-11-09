@@ -17,13 +17,16 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
 // #### SEND SYNC REQ #####
 input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
     
-    // ASKING FOR SYNC
+    // ASKING FOR RE-SYNC. OLD RSSI VALUES IGNORED
     if (stationID == 0) {
         for (let i = 1; i < 26; i++) {
+            console.log("asking for SYNC station " + ("" + i))
+            stationACK[i] = 0
+            //  reset the last RSSI. This may change async during the loop below
             for (let j = 0; j < 10; j++) {
                 if (stationACK[i] == 0) {
                     // if station didn't reply yet keep sending
-                    radio.sendValue("SYNC", 0)
+                    radio.sendValue("SYNC", i)
                     basic.pause(100)
                 }
                 
@@ -37,6 +40,11 @@ input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
 // ## DUMP THE stationACKs
 input.onButtonPressed(Button.A, function on_button_pressed_a() {
     
+    let lack = 26
+    for (let i = 1; i < lack; i++) {
+        console.log("Station " + ("" + i) + " ACK: " + ("" + Math.map(stationACK[i], 0, 255, -128, -42)))
+        basic.pause(100)
+    }
 })
 // #### CLIENT ACCEPTING REQ #####
 radio.onReceivedValue(function on_received_value(name: string, value: number) {
