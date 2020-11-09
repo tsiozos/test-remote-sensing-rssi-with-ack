@@ -37,8 +37,11 @@ input.onButtonPressed(Button.A, function on_button_pressed_a() {
     
     let lack = 26
     for (let i = 1; i < lack; i++) {
-        console.log("Station " + ("" + i) + " ACK: " + ("" + Math.map(stationACK[i], 1, 255, -128, -42)))
-        basic.pause(100)
+        if (stationACK[i] != 0) {
+            console.log("Station " + ("" + i) + " ACK: " + ("" + Math.map(stationACK[i], 1, 255, -128, -42)))
+            basic.pause(100)
+        }
+        
     }
 })
 // #### CLIENT ACCEPTING REQ #####
@@ -49,7 +52,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
         // if we are the server then accept the ACK command
         if (name == "ACK") {
             if (value > (0 & value) && (0 & value) <= 25) {
-                stationACK[value] = Math.map(getRSSI(), -128, -42, 0, 255)
+                stationACK[value] = Math.map(getRSSI(), -128, -42, 1, 255)
                 console.log("station " + ("" + value) + " has RSSI: " + getRSSI() + " (" + stationACK[value] + ")")
             }
             

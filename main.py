@@ -33,8 +33,9 @@ def on_button_pressed_a():
     global stationACK
     lack = 26
     for i in range(1,lack):
-        print("Station "+str(i)+" ACK: "+ str(Math.map(stationACK[i],1,255,-128,-42)))
-        basic.pause(100)
+        if stationACK[i]!=0:
+            print("Station "+str(i)+" ACK: "+ str(Math.map(stationACK[i],1,255,-128,-42)))
+            basic.pause(100)
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
 ##### CLIENT ACCEPTING REQ #####
