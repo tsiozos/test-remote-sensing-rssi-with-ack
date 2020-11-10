@@ -1,15 +1,21 @@
 class SENSOR {
-    static TEMP = 1
-    static ROLL = 2
-    static YAW = 3
-    static ACCX = 4
-    static ACCY = 5
-    static ACCZ = 6
+    static LIGHT = 1
+    static COMPASS = 2
+    static TEMPER = 3
+    static ROLL = 4
+    static YAW = 5
+    static ACCX = 6
+    static ACCY = 7
+    static ACCZ = 8
+    static ROTX = 9
+    static ROTY = 10
+    static ROTZ = 11
 }
 
 let stationID = 0
 basic.showNumber(0)
 let stationACK = _py.range(26).fill(0)
+control
 // #### SETUP #####
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
     

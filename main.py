@@ -1,15 +1,20 @@
 class SENSOR:
-    TEMP=1
-    ROLL=2
-    YAW=3
-    ACCX=4
-    ACCY=5
-    ACCZ=6
+    LIGHT=1
+    COMPASS=2
+    TEMPER=3
+    ROLL=4
+    YAW=5
+    ACCX=6
+    ACCY=7
+    ACCZ=8
+    ROTX=9
+    ROTY=10
+    ROTZ=11
 
 stationID = 0
 basic.show_number(0)
 stationACK = range(26).fill(0)
-
+control.
 
 ##### SETUP #####
 def on_button_pressed_b():
