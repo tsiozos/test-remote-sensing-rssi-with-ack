@@ -61,6 +61,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
     } else if (name == "SYNC") {
         // if we are a client we send ACK several times
         tries = triesFromRSSI(getRSSI(), 0.95, 9)
+        //  MAXIMUM 9 TRIES
         console.log("sending ACK " + ("" + tries) + " times")
         if (value == stationID) {
             // ## REPLY ONLY IF WE HAVE A MATCHING STATIONID

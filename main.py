@@ -48,7 +48,7 @@ def on_received_value(name, value):
                 print("station "+str(value)+" has RSSI: "+getRSSI()+" ("+stationACK[value]+")")
     else:
         if name=="SYNC":    #if we are a client we send ACK several times
-            tries = triesFromRSSI(getRSSI(),0.95,9)
+            tries = triesFromRSSI(getRSSI(),0.95,9)     # MAXIMUM 9 TRIES
             print("sending ACK "+str(tries)+" times")
             if value == stationID:      ### REPLY ONLY IF WE HAVE A MATCHING STATIONID
                 for i in range(tries):  ### tries ARE CALC'd WITH 95% RELIABILITY TARGET
