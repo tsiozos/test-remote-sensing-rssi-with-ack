@@ -1,6 +1,15 @@
+class SENSOR:
+    TEMP=1
+    ROLL=2
+    YAW=3
+    ACCX=4
+    ACCY=5
+    ACCZ=6
+
 stationID = 0
 basic.show_number(0)
 stationACK = range(26).fill(0)
+
 
 ##### SETUP #####
 def on_button_pressed_b():
@@ -41,13 +50,13 @@ input.on_button_pressed(Button.A, on_button_pressed_a)
 ##### CLIENT ACCEPTING REQ #####
 def on_received_value(name, value):
     global stationID, stationACK
-    if stationID == 0:    #if we are the server then accept the ACK command
+    if stationID == 0:    #SERVER: accept the ACK command
         if name == "ACK":
             if value > 0 & value <= 25:
                 stationACK[value] = Math.map(getRSSI(),-128,-42,1,255)
                 print("station "+str(value)+" has RSSI: "+getRSSI()+" ("+stationACK[value]+")")
     else:
-        if name=="SYNC":    #if we are a client we send ACK several times
+        if name=="SYNC":    #CLIENT reply with ACK several times
             tries = triesFromRSSI(getRSSI(),0.95,9)     # MAXIMUM 9 TRIES
             print("sending ACK "+str(tries)+" times")
             if value == stationID:      ### REPLY ONLY IF WE HAVE A MATCHING STATIONID

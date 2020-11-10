@@ -1,3 +1,12 @@
+class SENSOR {
+    static TEMP = 1
+    static ROLL = 2
+    static YAW = 3
+    static ACCX = 4
+    static ACCY = 5
+    static ACCZ = 6
+}
+
 let stationID = 0
 basic.showNumber(0)
 let stationACK = _py.range(26).fill(0)
@@ -49,7 +58,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
     let tries: number;
     
     if (stationID == 0) {
-        // if we are the server then accept the ACK command
+        // SERVER: accept the ACK command
         if (name == "ACK") {
             if (value > (0 & value) && (0 & value) <= 25) {
                 stationACK[value] = Math.map(getRSSI(), -128, -42, 1, 255)
@@ -59,7 +68,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
         }
         
     } else if (name == "SYNC") {
-        // if we are a client we send ACK several times
+        // CLIENT reply with ACK several times
         tries = triesFromRSSI(getRSSI(), 0.95, 9)
         //  MAXIMUM 9 TRIES
         console.log("sending ACK " + ("" + tries) + " times")
