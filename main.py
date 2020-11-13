@@ -14,7 +14,8 @@ class SENSOR:
 stationID = 0
 basic.show_number(0)
 stationACK = range(26).fill(0)
-control.
+radio.set_group(79)
+radio.set_transmit_power(7)
 
 ##### SETUP #####
 def on_button_pressed_b():
@@ -31,18 +32,18 @@ def on_button_pressed_ab():
     #ASKING FOR RE-SYNC. OLD RSSI VALUES IGNORED
     if stationID == 0:
         for i in range(1,26):
+            drawNumber(i)
             print ("asking for SYNC station "+str(i))
             stationACK[i] = 0   # reset the last RSSI. This may change async during the loop below
             for j in range(10):
                 if stationACK[i] == 0:    #if station didn't reply yet keep sending
                     radio.send_value("SYNC", i)
-                    basic.pause(100)
-            drawNumber(i)
+                    basic.pause(10+randint(1,5)*7)
         basic.clear_screen()
-    drawStationID()
+    drawClientMap()
 input.on_button_pressed(Button.AB, on_button_pressed_ab)
 
-### DUMP THE stationACKs
+### SERVER: DUMP THE stationACKs
 def on_button_pressed_a():
     global stationACK
     lack = 26
@@ -50,9 +51,10 @@ def on_button_pressed_a():
         if stationACK[i]!=0:
             print("Station "+str(i)+" ACK: "+ str(Math.map(stationACK[i],1,255,-128,-42)))
             basic.pause(100)
+    drawClientMap()
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
-##### CLIENT ACCEPTING REQ #####
+##### CLIENT/SERVER: ACCEPTING REQ #####
 def on_received_value(name, value):
     global stationID, stationACK
     if stationID == 0:    #SERVER: accept the ACK command
@@ -60,6 +62,7 @@ def on_received_value(name, value):
             if value > 0 & value <= 25:
                 stationACK[value] = Math.map(getRSSI(),-128,-42,1,255)
                 print("station "+str(value)+" has RSSI: "+getRSSI()+" ("+stationACK[value]+")")
+                drawClientMap()
     else:
         if name=="SYNC":    #CLIENT reply with ACK several times
             tries = triesFromRSSI(getRSSI(),0.95,9)     # MAXIMUM 9 TRIES
@@ -68,13 +71,26 @@ def on_received_value(name, value):
                 for i in range(tries):  ### tries ARE CALC'd WITH 95% RELIABILITY TARGET
                     radio.send_value("ACK",stationID)
                     drawNumber(tries-i)
-                    basic.pause(randint(1, 10)*200)
+                    basic.pause(randint(1, 10)*100)
                 basic.clear_screen()
             drawStationID()
 radio.on_received_value(on_received_value)
 
 
 ##### UTILITIES #####
+
+##### SERVER: DRAW CLIENT MAP #####
+def drawClientMap():
+    global stationACK
+    lack = 26
+    basic.clear_screen()
+    for i in range(1,lack):
+        if stationACK[i]==0:
+            drawSingleNumber(i,10)
+        else:
+            drawSingleNumber(i,255)
+
+
 ##### DRAW A NUMBER WITH LEDS #####
 def drawNumber(n: number):
     basic.clear_screen()
@@ -84,7 +100,13 @@ def drawNumber(n: number):
     else:
         basic.show_icon(IconNames.SAD)
 
-##### DRAW STATIONID USING LEDS #####
+def drawSingleNumber(n: number, intensity: number):
+    n=n-1
+    if n>=0 & n<=25:
+        led.plot_brightness(n % 5, n // 5 ,intensity)
+    else:
+        basic.show_icon(IconNames.SAD)
+##### CLIENT/SERVER: DRAW STATIONID USING LEDS #####
 def drawStationID():
     global stationID
     if stationID > 9:
@@ -94,6 +116,7 @@ def drawStationID():
     pass
 
 def getRSSI():
+    
     return radio.received_packet(RadioPacketProperty.SIGNAL_STRENGTH)
 
 def triesN(y,p):
@@ -113,3 +136,7 @@ def triesFromRSSI(rssi: float, y:float, maxtries: int):
     return t
 
 #drawNumber(19)
+#drawSingleNumber(1,255)
+#drawSingleNumber(5,255)
+#drawSingleNumber(21,255)
+#drawSingleNumber(25,255)

@@ -15,7 +15,8 @@ class SENSOR {
 let stationID = 0
 basic.showNumber(0)
 let stationACK = _py.range(26).fill(0)
-control
+radio.setGroup(79)
+radio.setTransmitPower(7)
 // #### SETUP #####
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
@@ -29,6 +30,7 @@ input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
     // ASKING FOR RE-SYNC. OLD RSSI VALUES IGNORED
     if (stationID == 0) {
         for (let i = 1; i < 26; i++) {
+            drawNumber(i)
             console.log("asking for SYNC station " + ("" + i))
             stationACK[i] = 0
             //  reset the last RSSI. This may change async during the loop below
@@ -36,18 +38,17 @@ input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
                 if (stationACK[i] == 0) {
                     // if station didn't reply yet keep sending
                     radio.sendValue("SYNC", i)
-                    basic.pause(100)
+                    basic.pause(10 + randint(1, 5) * 7)
                 }
                 
             }
-            drawNumber(i)
         }
         basic.clearScreen()
     }
     
-    drawStationID()
+    drawClientMap()
 })
-// ## DUMP THE stationACKs
+// ## SERVER: DUMP THE stationACKs
 input.onButtonPressed(Button.A, function on_button_pressed_a() {
     
     let lack = 26
@@ -58,8 +59,9 @@ input.onButtonPressed(Button.A, function on_button_pressed_a() {
         }
         
     }
+    drawClientMap()
 })
-// #### CLIENT ACCEPTING REQ #####
+// #### CLIENT/SERVER: ACCEPTING REQ #####
 radio.onReceivedValue(function on_received_value(name: string, value: number) {
     let tries: number;
     
@@ -69,6 +71,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
             if (value > (0 & value) && (0 & value) <= 25) {
                 stationACK[value] = Math.map(getRSSI(), -128, -42, 1, 255)
                 console.log("station " + ("" + value) + " has RSSI: " + getRSSI() + " (" + stationACK[value] + ")")
+                drawClientMap()
             }
             
         }
@@ -84,7 +87,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
                 // ## tries ARE CALC'd WITH 95% RELIABILITY TARGET
                 radio.sendValue("ACK", stationID)
                 drawNumber(tries - i)
-                basic.pause(randint(1, 10) * 200)
+                basic.pause(randint(1, 10) * 100)
             }
             basic.clearScreen()
         }
@@ -94,6 +97,21 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
     
 })
 // #### UTILITIES #####
+// #### SERVER: DRAW CLIENT MAP #####
+function drawClientMap() {
+    
+    let lack = 26
+    basic.clearScreen()
+    for (let i = 1; i < lack; i++) {
+        if (stationACK[i] == 0) {
+            drawSingleNumber(i, 10)
+        } else {
+            drawSingleNumber(i, 255)
+        }
+        
+    }
+}
+
 // #### DRAW A NUMBER WITH LEDS #####
 function drawNumber(n: number) {
     basic.clearScreen()
@@ -107,7 +125,17 @@ function drawNumber(n: number) {
     
 }
 
-// #### DRAW STATIONID USING LEDS #####
+function drawSingleNumber(n: number, intensity: number) {
+    n = n - 1
+    if (n >= (0 & n) && (0 & n) <= 25) {
+        led.plotBrightness(n % 5, Math.idiv(n, 5), intensity)
+    } else {
+        basic.showIcon(IconNames.Sad)
+    }
+    
+}
+
+// #### CLIENT/SERVER: DRAW STATIONID USING LEDS #####
 function drawStationID() {
     
     if (stationID > 9) {
