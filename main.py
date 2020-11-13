@@ -63,8 +63,7 @@ def on_received_value(name, value):
                 stationACK[value] = Math.map(getRSSI(),-128,-42,1,255)
                 print("station "+str(value)+" has RSSI: "+getRSSI()+" ("+stationACK[value]+")")
                 drawClientMap()
-    else:
-        if name=="SYNC":    #CLIENT reply with ACK several times
+    elif name=="SYNC":    #CLIENT reply with ACK several times
             tries = triesFromRSSI(getRSSI(),0.95,9)     # MAXIMUM 9 TRIES
             print("sending ACK "+str(tries)+" times")
             if value == stationID:      ### REPLY ONLY IF WE HAVE A MATCHING STATIONID
@@ -74,6 +73,10 @@ def on_received_value(name, value):
                     basic.pause(randint(1, 10)*100)
                 basic.clear_screen()
             drawStationID()
+    else:
+        if name=="DATARQ":
+            pass
+
 radio.on_received_value(on_received_value)
 
 

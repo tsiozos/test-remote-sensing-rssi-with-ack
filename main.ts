@@ -93,6 +93,8 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
         }
         
         drawStationID()
+    } else if (name == "DATARQ") {
+        
     }
     
 })
