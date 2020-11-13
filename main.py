@@ -17,6 +17,11 @@ stationACK = range(26).fill(0)
 radio.set_group(79)
 radio.set_transmit_power(7)
 
+# CLIENT: SETUP DATA STRUCTURE
+dataBuffer = bytearray(15)
+dataBuffer.fill(0)
+
+
 ##### SETUP #####
 def on_button_pressed_b():
     global stationID
@@ -56,7 +61,7 @@ input.on_button_pressed(Button.A, on_button_pressed_a)
 
 ##### CLIENT/SERVER: ACCEPTING REQ #####
 def on_received_value(name, value):
-    global stationID, stationACK
+    global stationID, stationACK, dataBuffer
     if stationID == 0:    #SERVER: accept the ACK command
         if name == "ACK":
             if value > 0 & value <= 25:
@@ -74,14 +79,31 @@ def on_received_value(name, value):
                 basic.clear_screen()
             drawStationID()
     else:
-        if name=="DATARQ":
+        if name[0:6]=="DATARQ":     #CLIENT: SEND DATA ARRAY BACK TO SERVER
+            statID = int(name[6:])
             tries = triesFromRSSI(getRSSI(), 0.95, 9)
             print("sending DATA "+str(tries)+ " times")
-            if 
-
+            dataBuffer[0] = stationID
+            for i in range(tries):
+                radio.send_buffer(dataBuffer)
+                basic.pause(randint(1,10)*200)
 
 radio.on_received_value(on_received_value)
 
+#SERVER: RECEIVED DATA ARRAY FROM CLIENT
+def on_received_buffer(receivedBuffer):
+    print("Received data from station "+str(receivedBuffer[0]))
+radio.on_received_buffer(on_received_buffer)
+
+#SERVER: ASKING A CLIENT FOR DATA ARRAY
+def on_gesture_screen_down():
+    global stationID
+    if stationID == 0:
+        tries = triesFromRSSI(Math.map(stationACK[14],1,255,-128,-42),0.95,9)
+        print("asking for DATA "+ str(tries)+ " times")
+        for i in range(tries):
+            radio.send_value("DATARQ14", 0)
+input.on_gesture(Gesture.SCREEN_DOWN, on_gesture_screen_down)
 
 ##### UTILITIES #####
 
@@ -146,3 +168,6 @@ def triesFromRSSI(rssi: float, y:float, maxtries: int):
 #drawSingleNumber(5,255)
 #drawSingleNumber(21,255)
 #drawSingleNumber(25,255)
+
+#strt = "DATARQ14"
+#print(strt[6:])

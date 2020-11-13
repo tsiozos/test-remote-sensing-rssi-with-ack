@@ -17,6 +17,9 @@ basic.showNumber(0)
 let stationACK = _py.range(26).fill(0)
 radio.setGroup(79)
 radio.setTransmitPower(7)
+//  CLIENT: SETUP DATA STRUCTURE
+let dataBuffer = control.createBuffer(15)
+dataBuffer.fill(0)
 // #### SETUP #####
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
     
@@ -64,6 +67,8 @@ input.onButtonPressed(Button.A, function on_button_pressed_a() {
 // #### CLIENT/SERVER: ACCEPTING REQ #####
 radio.onReceivedValue(function on_received_value(name: string, value: number) {
     let tries: number;
+    let i: number;
+    let statID: number;
     
     if (stationID == 0) {
         // SERVER: accept the ACK command
@@ -83,7 +88,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
         console.log("sending ACK " + ("" + tries) + " times")
         if (value == stationID) {
             // ## REPLY ONLY IF WE HAVE A MATCHING STATIONID
-            for (let i = 0; i < tries; i++) {
+            for (i = 0; i < tries; i++) {
                 // ## tries ARE CALC'd WITH 95% RELIABILITY TARGET
                 radio.sendValue("ACK", stationID)
                 drawNumber(tries - i)
@@ -93,9 +98,33 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
         }
         
         drawStationID()
-    } else if (name == "DATARQ") {
+    } else if (name.slice(0, 6) == "DATARQ") {
+        // CLIENT: SEND DATA ARRAY BACK TO SERVER
+        statID = parseInt(name.slice(6))
         tries = triesFromRSSI(getRSSI(), 0.95, 9)
         console.log("sending DATA " + ("" + tries) + " times")
+        dataBuffer[0] = stationID
+        for (i = 0; i < tries; i++) {
+            radio.sendBuffer(dataBuffer)
+            basic.pause(randint(1, 10) * 200)
+        }
+    }
+    
+})
+// SERVER: RECEIVED DATA ARRAY FROM CLIENT
+radio.onReceivedBuffer(function on_received_buffer(receivedBuffer: Buffer) {
+    console.log("Received data from station " + ("" + receivedBuffer[0]))
+})
+// SERVER: ASKING A CLIENT FOR DATA ARRAY
+input.onGesture(Gesture.ScreenDown, function on_gesture_screen_down() {
+    let tries: number;
+    
+    if (stationID == 0) {
+        tries = triesFromRSSI(Math.map(stationACK[14], 1, 255, -128, -42), 0.95, 9)
+        console.log("asking for DATA " + ("" + tries) + " times")
+        for (let i = 0; i < tries; i++) {
+            radio.sendValue("DATARQ14", 0)
+        }
     }
     
 })
