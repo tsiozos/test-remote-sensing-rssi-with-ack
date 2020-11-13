@@ -75,7 +75,10 @@ def on_received_value(name, value):
             drawStationID()
     else:
         if name=="DATARQ":
-            pass
+            tries = triesFromRSSI(getRSSI(), 0.95, 9)
+            print("sending DATA "+str(tries)+ " times")
+            if 
+
 
 radio.on_received_value(on_received_value)
 

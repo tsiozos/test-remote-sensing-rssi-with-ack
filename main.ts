@@ -94,7 +94,8 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
         
         drawStationID()
     } else if (name == "DATARQ") {
-        
+        tries = triesFromRSSI(getRSSI(), 0.95, 9)
+        console.log("sending DATA " + ("" + tries) + " times")
     }
     
 })
