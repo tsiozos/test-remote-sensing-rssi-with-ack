@@ -131,7 +131,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
 })
 // SERVER: RECEIVED DATA ARRAY FROM CLIENT
 radio.onReceivedBuffer(function on_received_buffer(receivedBuffer: Buffer) {
-    console.log("Received data from station " + ("" + receivedBuffer[0]))
+    console.log("Recv'd data from stat " + ("" + receivedBuffer[0]))
     console.log("Light: " + ("" + receivedBuffer[SENSOR.LIGHT]))
     console.log("Temp: " + ("" + receivedBuffer[SENSOR.TEMPER]))
     console.log("Compass: " + ("" + Math.map(receivedBuffer[SENSOR.COMPASS], 0, 255, 0, 359)))

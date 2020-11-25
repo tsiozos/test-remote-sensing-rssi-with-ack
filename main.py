@@ -105,7 +105,7 @@ radio.on_received_value(on_received_value)
 
 #SERVER: RECEIVED DATA ARRAY FROM CLIENT
 def on_received_buffer(receivedBuffer):
-    print("Received data from station "+str(receivedBuffer[0]))
+    print("Recv'd data from stat "+str(receivedBuffer[0]))
     print("Light: "+str(receivedBuffer[SENSOR.LIGHT]))
     print("Temp: "+str(receivedBuffer[SENSOR.TEMPER]))
     print("Compass: "+str(Math.map(receivedBuffer[SENSOR.COMPASS],0,255,0,359)))
