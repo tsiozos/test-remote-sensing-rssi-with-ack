@@ -1,4 +1,5 @@
 class SENSOR:
+    STATION=0
     LIGHT=1
     COMPASS=2
     TEMPER=3
@@ -21,7 +22,7 @@ radio.set_group(79)
 radio.set_transmit_power(7)
 
 # CLIENT: SETUP DATA STRUCTURE
-dataBuffer = bytearray(15)
+dataBuffer = bytearray(18)
 dataBuffer.fill(0)
 
 
@@ -87,13 +88,14 @@ def on_received_value(name, value):
             if statID==stationID:   #CLIENT: ARE WE THE STATION BEING ASKED?
                 tries = triesFromRSSI(getRSSI(), 0.95, 9)
                 print("sending DATA "+str(tries)+ " times")
-                dataBuffer[0] = stationID
+                dataBuffer[SENSOR.STATION] = stationID
                 dataBuffer[SENSOR.LIGHT]=input.light_level()
                 dataBuffer[SENSOR.TEMPER]=input.temperature()
                 dataBuffer[SENSOR.COMPASS]=Math.map(input.compass_heading(),0,359,0,255)
                 dataBuffer[SENSOR.PITCH]=Math.map(input.rotation(Rotation.PITCH),-180,180,0,255)
                 dataBuffer[SENSOR.ROLL]=Math.map(input.rotation(Rotation.ROLL),-180,180,0,255)
-                
+                magx = Math.round(Math.constrain(input.magnetic_force(Dimension.X),-127,127))
+                dataBuffer[SENSOR.MAGX]=Math.map(magx,-127,127,0,255)
                 for i in range(tries):
                     radio.send_buffer(dataBuffer)
                     drawUpToNumber(tries-i-1)   # SHOW HOW MANY TRIES ARE LEFT
@@ -104,6 +106,12 @@ radio.on_received_value(on_received_value)
 #SERVER: RECEIVED DATA ARRAY FROM CLIENT
 def on_received_buffer(receivedBuffer):
     print("Received data from station "+str(receivedBuffer[0]))
+    print("Light: "+str(receivedBuffer[SENSOR.LIGHT]))
+    print("Temp: "+str(receivedBuffer[SENSOR.TEMPER]))
+    print("Compass: "+str(Math.map(receivedBuffer[SENSOR.COMPASS],0,255,0,359)))
+    print("Pitch: "+str(Math.map(receivedBuffer[SENSOR.PITCH],0,255,-180,180)))
+    print("Roll: "+str(Math.map(receivedBuffer[SENSOR.ROLL],0,255,-180,180)))
+
 radio.on_received_buffer(on_received_buffer)
 
 #SERVER: ASKING A CLIENT FOR DATA ARRAY
@@ -162,7 +170,6 @@ def drawStationID():
     pass
 
 def getRSSI():
-    
     return radio.received_packet(RadioPacketProperty.SIGNAL_STRENGTH)
 
 def triesN(y,p):

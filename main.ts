@@ -1,4 +1,5 @@
 class SENSOR {
+    static STATION = 0
     static LIGHT = 1
     static COMPASS = 2
     static TEMPER = 3
@@ -21,7 +22,7 @@ let stationACK = _py.range(26).fill(0)
 radio.setGroup(79)
 radio.setTransmitPower(7)
 //  CLIENT: SETUP DATA STRUCTURE
-let dataBuffer = control.createBuffer(15)
+let dataBuffer = control.createBuffer(18)
 dataBuffer.fill(0)
 // #### SETUP #####
 input.onButtonPressed(Button.B, function on_button_pressed_b() {
@@ -72,6 +73,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
     let tries: number;
     let i: number;
     let statID: number;
+    let magx: number;
     
     if (stationID == 0) {
         // SERVER: accept the ACK command
@@ -108,12 +110,14 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
             // CLIENT: ARE WE THE STATION BEING ASKED?
             tries = triesFromRSSI(getRSSI(), 0.95, 9)
             console.log("sending DATA " + ("" + tries) + " times")
-            dataBuffer[0] = stationID
+            dataBuffer[SENSOR.STATION] = stationID
             dataBuffer[SENSOR.LIGHT] = input.lightLevel()
             dataBuffer[SENSOR.TEMPER] = input.temperature()
             dataBuffer[SENSOR.COMPASS] = Math.map(input.compassHeading(), 0, 359, 0, 255)
             dataBuffer[SENSOR.PITCH] = Math.map(input.rotation(Rotation.Pitch), -180, 180, 0, 255)
             dataBuffer[SENSOR.ROLL] = Math.map(input.rotation(Rotation.Roll), -180, 180, 0, 255)
+            magx = Math.round(Math.constrain(input.magneticForce(Dimension.X), -127, 127))
+            dataBuffer[SENSOR.MAGX] = Math.map(magx, -127, 127, 0, 255)
             for (i = 0; i < tries; i++) {
                 radio.sendBuffer(dataBuffer)
                 drawUpToNumber(tries - i - 1)
@@ -128,6 +132,11 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
 // SERVER: RECEIVED DATA ARRAY FROM CLIENT
 radio.onReceivedBuffer(function on_received_buffer(receivedBuffer: Buffer) {
     console.log("Received data from station " + ("" + receivedBuffer[0]))
+    console.log("Light: " + ("" + receivedBuffer[SENSOR.LIGHT]))
+    console.log("Temp: " + ("" + receivedBuffer[SENSOR.TEMPER]))
+    console.log("Compass: " + ("" + Math.map(receivedBuffer[SENSOR.COMPASS], 0, 255, 0, 359)))
+    console.log("Pitch: " + ("" + Math.map(receivedBuffer[SENSOR.PITCH], 0, 255, -180, 180)))
+    console.log("Roll: " + ("" + Math.map(receivedBuffer[SENSOR.ROLL], 0, 255, -180, 180)))
 })
 // SERVER: ASKING A CLIENT FOR DATA ARRAY
 input.onPinPressed(TouchPin.P0, function on_pin_pressed_p0() {
