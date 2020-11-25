@@ -3,7 +3,7 @@ class SENSOR:
     COMPASS=2
     TEMPER=3
     ROLL=4
-    YAW=5
+    PITCH=5
     ACCX=6
     ACCY=7
     ACCZ=8
@@ -37,7 +37,7 @@ def on_button_pressed_ab():
     #ASKING FOR RE-SYNC. OLD RSSI VALUES IGNORED
     if stationID == 0:
         for i in range(1,26):
-            drawNumber(i)
+            drawUpToNumber(i)
             print ("asking for SYNC station "+str(i))
             stationACK[i] = 0   # reset the last RSSI. This may change async during the loop below
             for j in range(10):
@@ -74,19 +74,27 @@ def on_received_value(name, value):
             if value == stationID:      ### REPLY ONLY IF WE HAVE A MATCHING STATIONID
                 for i in range(tries):  ### tries ARE CALC'd WITH 95% RELIABILITY TARGET
                     radio.send_value("ACK",stationID)
-                    drawNumber(tries-i)
+                    drawUpToNumber(tries-i)
                     basic.pause(randint(1, 10)*100)
                 basic.clear_screen()
             drawStationID()
     else:
         if name[0:6]=="DATARQ":     #CLIENT: SEND DATA ARRAY BACK TO SERVER
             statID = int(name[6:])
-            tries = triesFromRSSI(getRSSI(), 0.95, 9)
-            print("sending DATA "+str(tries)+ " times")
-            dataBuffer[0] = stationID
-            for i in range(tries):
-                radio.send_buffer(dataBuffer)
-                basic.pause(randint(1,10)*200)
+            if statID==stationID:   #CLIENT: ARE WE THE STATION BEING ASKED?
+                tries = triesFromRSSI(getRSSI(), 0.95, 9)
+                print("sending DATA "+str(tries)+ " times")
+                dataBuffer[0] = stationID
+                dataBuffer[SENSOR.LIGHT]=input.light_level()
+                dataBuffer[SENSOR.TEMPER]=input.temperature()
+                dataBuffer[SENSOR.COMPASS]=Math.map(input.compass_heading(),0,359,0,255)
+                dataBuffer[SENSOR.PITCH]=Math.map(input.rotation(Rotation.PITCH),-180,180,0,255)
+                dataBuffer[SENSOR.ROLL]=Math.map(input.rotation(Rotation.ROLL),-180,180,0,255)
+                
+                for i in range(tries):
+                    radio.send_buffer(dataBuffer)
+                    drawUpToNumber(tries-i-1)   # SHOW HOW MANY TRIES ARE LEFT
+                    basic.pause(randint(1,5)*100)
 
 radio.on_received_value(on_received_value)
 
@@ -96,14 +104,21 @@ def on_received_buffer(receivedBuffer):
 radio.on_received_buffer(on_received_buffer)
 
 #SERVER: ASKING A CLIENT FOR DATA ARRAY
-def on_gesture_screen_down():
+def on_pin_pressed_p0():
     global stationID
     if stationID == 0:
+        # CALCULATE TRIES BASED ON PREVIOUS RSSI FROM THIS CLIENT
+        # THE STATIONACK ARRAY HOLDS THE LAST RSSI FROM THIS CLIENT
+        # WE'RE SCALING THE RSSI FROM -128dB TO -42dB TO 1-255 RANGE AND BACK
         tries = triesFromRSSI(Math.map(stationACK[14],1,255,-128,-42),0.95,9)
         print("asking for DATA "+ str(tries)+ " times")
         for i in range(tries):
             radio.send_value("DATARQ14", 0)
-input.on_gesture(Gesture.SCREEN_DOWN, on_gesture_screen_down)
+            basic.pause(randint(1,5)*50)
+            drawSingleNumber(14,255*(tries%2))
+    basic.clear_screen()
+
+input.on_pin_pressed(TouchPin.P0, on_pin_pressed_p0)
 
 ##### UTILITIES #####
 
@@ -120,7 +135,7 @@ def drawClientMap():
 
 
 ##### DRAW A NUMBER WITH LEDS #####
-def drawNumber(n: number):
+def drawUpToNumber(n: number):
     basic.clear_screen()
     if n>=0 & n<=25:
         for i in range(n):
@@ -138,7 +153,7 @@ def drawSingleNumber(n: number, intensity: number):
 def drawStationID():
     global stationID
     if stationID > 9:
-        drawNumber(stationID)
+        drawUpToNumber(stationID)
     else:
         basic.show_number(stationID)
     pass

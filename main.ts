@@ -3,7 +3,7 @@ class SENSOR {
     static COMPASS = 2
     static TEMPER = 3
     static ROLL = 4
-    static YAW = 5
+    static PITCH = 5
     static ACCX = 6
     static ACCY = 7
     static ACCZ = 8
@@ -33,7 +33,7 @@ input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
     // ASKING FOR RE-SYNC. OLD RSSI VALUES IGNORED
     if (stationID == 0) {
         for (let i = 1; i < 26; i++) {
-            drawNumber(i)
+            drawUpToNumber(i)
             console.log("asking for SYNC station " + ("" + i))
             stationACK[i] = 0
             //  reset the last RSSI. This may change async during the loop below
@@ -91,7 +91,7 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
             for (i = 0; i < tries; i++) {
                 // ## tries ARE CALC'd WITH 95% RELIABILITY TARGET
                 radio.sendValue("ACK", stationID)
-                drawNumber(tries - i)
+                drawUpToNumber(tries - i)
                 basic.pause(randint(1, 10) * 100)
             }
             basic.clearScreen()
@@ -101,13 +101,24 @@ radio.onReceivedValue(function on_received_value(name: string, value: number) {
     } else if (name.slice(0, 6) == "DATARQ") {
         // CLIENT: SEND DATA ARRAY BACK TO SERVER
         statID = parseInt(name.slice(6))
-        tries = triesFromRSSI(getRSSI(), 0.95, 9)
-        console.log("sending DATA " + ("" + tries) + " times")
-        dataBuffer[0] = stationID
-        for (i = 0; i < tries; i++) {
-            radio.sendBuffer(dataBuffer)
-            basic.pause(randint(1, 10) * 200)
+        if (statID == stationID) {
+            // CLIENT: ARE WE THE STATION BEING ASKED?
+            tries = triesFromRSSI(getRSSI(), 0.95, 9)
+            console.log("sending DATA " + ("" + tries) + " times")
+            dataBuffer[0] = stationID
+            dataBuffer[SENSOR.LIGHT] = input.lightLevel()
+            dataBuffer[SENSOR.TEMPER] = input.temperature()
+            dataBuffer[SENSOR.COMPASS] = Math.map(input.compassHeading(), 0, 359, 0, 255)
+            dataBuffer[SENSOR.PITCH] = Math.map(input.rotation(Rotation.Pitch), -180, 180, 0, 255)
+            dataBuffer[SENSOR.ROLL] = Math.map(input.rotation(Rotation.Roll), -180, 180, 0, 255)
+            for (i = 0; i < tries; i++) {
+                radio.sendBuffer(dataBuffer)
+                drawUpToNumber(tries - i - 1)
+                //  SHOW HOW MANY TRIES ARE LEFT
+                basic.pause(randint(1, 5) * 100)
+            }
         }
+        
     }
     
 })
@@ -116,17 +127,23 @@ radio.onReceivedBuffer(function on_received_buffer(receivedBuffer: Buffer) {
     console.log("Received data from station " + ("" + receivedBuffer[0]))
 })
 // SERVER: ASKING A CLIENT FOR DATA ARRAY
-input.onGesture(Gesture.ScreenDown, function on_gesture_screen_down() {
+input.onPinPressed(TouchPin.P0, function on_pin_pressed_p0() {
     let tries: number;
     
     if (stationID == 0) {
+        //  CALCULATE TRIES BASED ON PREVIOUS RSSI FROM THIS CLIENT
+        //  THE STATIONACK ARRAY HOLDS THE LAST RSSI FROM THIS CLIENT
+        //  WE'RE SCALING THE RSSI FROM -128dB TO -42dB TO 1-255 RANGE AND BACK
         tries = triesFromRSSI(Math.map(stationACK[14], 1, 255, -128, -42), 0.95, 9)
         console.log("asking for DATA " + ("" + tries) + " times")
         for (let i = 0; i < tries; i++) {
             radio.sendValue("DATARQ14", 0)
+            basic.pause(randint(1, 5) * 50)
+            drawSingleNumber(14, 255 * (tries % 2))
         }
     }
     
+    basic.clearScreen()
 })
 // #### UTILITIES #####
 // #### SERVER: DRAW CLIENT MAP #####
@@ -145,7 +162,7 @@ function drawClientMap() {
 }
 
 // #### DRAW A NUMBER WITH LEDS #####
-function drawNumber(n: number) {
+function drawUpToNumber(n: number) {
     basic.clearScreen()
     if (n >= (0 & n) && (0 & n) <= 25) {
         for (let i = 0; i < n; i++) {
@@ -171,7 +188,7 @@ function drawSingleNumber(n: number, intensity: number) {
 function drawStationID() {
     
     if (stationID > 9) {
-        drawNumber(stationID)
+        drawUpToNumber(stationID)
     } else {
         basic.showNumber(stationID)
     }
