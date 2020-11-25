@@ -10,6 +10,9 @@ class SENSOR:
     ROTX=9
     ROTY=10
     ROTZ=11
+    MAGX=12
+    MAGY=13
+    MAGZ=14
 
 stationID = 0
 basic.show_number(0)

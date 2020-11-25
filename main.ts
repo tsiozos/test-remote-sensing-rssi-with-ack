@@ -10,6 +10,9 @@ class SENSOR {
     static ROTX = 9
     static ROTY = 10
     static ROTZ = 11
+    static MAGX = 12
+    static MAGY = 13
+    static MAGZ = 14
 }
 
 let stationID = 0
