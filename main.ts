@@ -22,7 +22,7 @@ let stationACK = _py.range(26).fill(0)
 radio.setGroup(79)
 radio.setTransmitPower(7)
 //  CLIENT: SETUP DATA STRUCTURE
-let dataBuffer = control.createBuffer(18)
+let dataBuffer = control.createBuffer(19)
 dataBuffer.fill(0)
 // #### SETUP #####
 input.onButtonPressed(Button.B, function on_button_pressed_b() {

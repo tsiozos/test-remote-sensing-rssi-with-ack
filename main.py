@@ -22,7 +22,7 @@ radio.set_group(79)
 radio.set_transmit_power(7)
 
 # CLIENT: SETUP DATA STRUCTURE
-dataBuffer = bytearray(18)
+dataBuffer = bytearray(19)
 dataBuffer.fill(0)
 
 
